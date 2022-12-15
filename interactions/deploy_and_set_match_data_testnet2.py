@@ -88,7 +88,7 @@ async def main():
   )
   """
 
-  """
+  
   #await set_match_date_by_id(contract, 0, 1670079600) # 2022-12-03 15:00:00Z
   #await set_match_teams_by_id(contract, 0, encode_shortstring("Pays-Bas"), encode_shortstring("Etats-Unis"))
   #await set_match_result_by_id(contract, 0, 3, 1)
@@ -99,7 +99,7 @@ async def main():
   await set_match_data_by_id(contract, 1, 1670094000, encode_shortstring("Argentina"), encode_shortstring("Australia"), 2, 1)
 
   #await set_match_date_by_id(contract, 2, 1670166000) # 2022-12-04 15:00:00Z
-  await set_match_data_by_id(contract, 2, 1670166000, encode_shortstring("Japan"), encode_shortstring("Croatia"), 1, 1)
+  """await set_match_data_by_id(contract, 2, 1670166000, encode_shortstring("Japan"), encode_shortstring("Croatia"), 1, 1)
 
   #await set_match_date_by_id(contract, 3, 1670180400) # 2022-12-04 19:00:00Z
   await set_match_data_by_id(contract, 3, 1670180400, encode_shortstring("Brazil"), encode_shortstring("South Korea"), 4, 1)
@@ -129,10 +129,6 @@ async def main():
   await set_match_date_by_id(contract, 14, 1671289200) # 2022-12-17 15:00:00Z
 
   await set_match_date_by_id(contract, 15, 1671375600) # 2022-12-18 15:00:00Z"""
-
-  # Calling contract's function doesn't create a new transaction, you get the function's result.
-  (result) = await contract.functions["get_match_date_by_id"].call(0)
-  print(result.date)
 
 asyncio.run(main())
 

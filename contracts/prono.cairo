@@ -210,8 +210,6 @@ func set_match_bet_by_id{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_c
     }
 }
 
-
-
 // VIEWS
 
 @view
@@ -233,7 +231,7 @@ func get_match_date_by_id{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_
 }
 
 @view
-func get_match_data_by_id{syscall_ptr: felt, pedersen_ptr: HashBuiltin, range_check_ptr}(
+func get_match_data_by_id{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     id: felt
 ) -> (date: felt, home_team: felt, away_team: felt, is_score_set: felt, score_ht: felt, score_at: felt) {
     assert_le(id, 15);
@@ -245,7 +243,12 @@ func get_match_data_by_id{syscall_ptr: felt, pedersen_ptr: HashBuiltin, range_ch
 func get_users_len{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (len: felt) {
     let len = users_len.read();
     return len;
+}
 
+@view
+func get_user_bet_by_id{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(user_address: felt, id: felt) -> (bet: Bet) {
+    let user_bet = bets.read(user_address, id);
+    return user_bet;
 }
 
 // INTERNALS

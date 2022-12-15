@@ -22,42 +22,29 @@ async def set_match_date_by_id(contract, id, date):
   await invocation.wait_for_acceptance()
 
 async def set_match_teams_by_id(contract, id, home_team, away_team):
-  # All exposed functions are available at contract.functions.
-  # Here we invoke a function, creating a new transaction.
   invocation = await contract.functions["set_match_teams_by_id"].invoke(id, home_team, away_team, max_fee=int(1e16))
-
-  # Invocation returns InvokeResult object. It exposes a helper for waiting until transaction is accepted.
   await invocation.wait_for_acceptance()
 
 async def set_match_result_by_id(contract, id, home_team, away_team):
-  # All exposed functions are available at contract.functions.
-  # Here we invoke a function, creating a new transaction.
   invocation = await contract.functions["set_match_result_by_id"].invoke(id, home_team, away_team, max_fee=int(1e16))
-
-  # Invocation returns InvokeResult object. It exposes a helper for waiting until transaction is accepted.
   await invocation.wait_for_acceptance()
 
 async def set_match_data_by_id(contract, id, date, home_team, away_team, score_ht, score_at):
-  # All exposed functions are available at contract.functions.
-  # Here we invoke a function, creating a new transaction.
   invocation = await contract.functions["set_match_data_by_id"].invoke(id, date, home_team, away_team, score_ht, score_at, max_fee=int(1e16))
-
-  # Invocation returns InvokeResult object. It exposes a helper for waiting until transaction is accepted.
   await invocation.wait_for_acceptance()
 
 async def set_match_bet_by_id(contract, id, home_team, away_team):
-  # All exposed functions are available at contract.functions.
-  # Here we invoke a function, creating a new transaction.
   invocation = await contract.functions["set_match_bet_by_id"].invoke(id, home_team, away_team, max_fee=int(1e16))
-
-  # Invocation returns InvokeResult object. It exposes a helper for waiting until transaction is accepted.
   await invocation.wait_for_acceptance()
 
 async def get_users_len(contract):
-  # All exposed functions are available at contract.functions.
-  # Here we invoke a function, creating a new transaction.
   result = await contract.functions["get_users_len"].call()
   print(result.len)
+
+async def get_user_bet_by_id(contract, user_address, id):
+  result = await contract.functions["get_user_bet_by_id"].call(user_address, id)
+  print(result)
+
 
 async def main():
   network_client = GatewayClient("http://localhost:5050")
@@ -102,8 +89,8 @@ async def main():
   )
   """
 
-  """
-  #await set_match_date_by_id(contract, 0, 1670079600) # 2022-12-03 15:00:00Z
+  
+  """#await set_match_date_by_id(contract, 0, 1670079600) # 2022-12-03 15:00:00Z
   #await set_match_teams_by_id(contract, 0, encode_shortstring("Pays-Bas"), encode_shortstring("Etats-Unis"))
   #await set_match_result_by_id(contract, 0, 3, 1)
   await set_match_data_by_id(contract, 0, 1670079600, encode_shortstring("Netherlands"), encode_shortstring("USA"), 3, 1) 
@@ -149,6 +136,8 @@ async def main():
   await set_match_bet_by_id(contract, 15, 1, 2)
 
   await get_users_len(contract)
+
+  await get_user_bet_by_id(contract, 0x27caf40c6fb8fb5e134a9687b9485d02f33642fd5dd6200f1eadab02822291d, 15)
 
 asyncio.run(main())
 
