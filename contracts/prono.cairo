@@ -96,7 +96,7 @@ func set_match_teams_by_id{pedersen_ptr: HashBuiltin*, syscall_ptr: felt*, range
     id: felt, home_team: felt, away_team: felt
 ) {
     assert_le(id, 15);
-    assert_only_owner();
+    _assert_only_owner();
 
     let (match) = matches.read(id=id);
     let m = Match(
@@ -118,7 +118,7 @@ func set_match_date_by_id{pedersen_ptr: HashBuiltin*, syscall_ptr: felt*, range_
     id: felt, date: felt
 ) {
     assert_le(id, 15);
-    assert_only_owner();
+    _assert_only_owner();
 
     let (match) = matches.read(id=id);
     let m = Match(
@@ -140,7 +140,7 @@ func set_match_result_by_id{pedersen_ptr: HashBuiltin*, syscall_ptr: felt*, rang
     id: felt, score_ht: felt, score_at: felt
 ) {
     assert_le(id, 15);
-    assert_only_owner();
+    _assert_only_owner();
 
     let (match) = matches.read(id=id);
     let m = Match(
@@ -162,7 +162,7 @@ func set_match_data_by_id{pedersen_ptr: HashBuiltin*, syscall_ptr: felt*, range_
     id: felt, date: felt, home_team: felt, away_team: felt, score_ht: felt, score_at: felt
 ) {
     assert_le(id, 15);
-    assert_only_owner();
+    _assert_only_owner();
 
     let (match) = matches.read(id=id);
     let m = Match(
@@ -182,13 +182,16 @@ func set_match_data_by_id{pedersen_ptr: HashBuiltin*, syscall_ptr: felt*, range_
 func set_match_bet_by_id{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     id: felt, home_team: felt, away_team: felt
 ) {
+    alloc_locals;
     assert_le(id, 15);
 
     let (match) = matches.read(id=id);
-    let (block_timestamp) = get_block_timestamp();
-    assert_le(block_timestamp, match.date); // cannot bet on already started match
+    let (local block_timestamp) = get_block_timestamp();
+    with_attr error_message("set_match_bet_by_id failed:\ncannot bet on already started match") {
+        assert_le(block_timestamp, match.date);
+    }
 
-    let (caller) = get_caller_address();
+    let (local caller) = get_caller_address();
     
     let bet = Bet(
         score_ht=home_team,
@@ -196,8 +199,15 @@ func set_match_bet_by_id{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_c
     );
 
     bets.write(address=caller, match_id=id, value=bet);
-
-    return ();
+    let has_user_already_bet = _has_user_already_bet(caller, 0);
+    if(has_user_already_bet == FALSE) {
+        let (id) = users_len.read();
+        users.write(id, caller);
+        users_len.write(id+1);
+        return ();
+    } else {
+        return ();
+    }
 }
 
 
@@ -222,19 +232,40 @@ func get_match_date_by_id{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_
     return (date=m.date);
 }
 
+@view
+func get_users_len{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (len: felt) {
+    let len = users_len.read();
+    return len;
+}
+
 // INTERNALS
 
-func assert_only_owner{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
+func _assert_only_owner{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
     alloc_locals;
 
     let (local caller) = get_caller_address();
     let (local owner_stor) = owner.read();
 
-    with_attr error_message("assert_only_owner failed:\n  caller: {caller}\n  owner: {owner}") {
+    with_attr error_message("_assert_only_owner failed:\n  caller: {caller}\n  owner: {owner}") {
         assert owner_stor = caller;
     }
     return ();
 }
+
+func _has_user_already_bet{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(user_address: felt, current_id: felt) -> felt {
+    let (len) = users_len.read();
+    if(current_id == len) {
+        return FALSE;
+    }
+
+    let (address) = users.read(current_id);
+    if(address == user_address) {
+        return TRUE;
+    }
+
+    return _has_user_already_bet(user_address, current_id+1);
+}
+
 
 // STORAGES
 
