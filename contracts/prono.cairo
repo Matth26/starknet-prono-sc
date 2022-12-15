@@ -233,9 +233,19 @@ func get_match_date_by_id{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_
 }
 
 @view
+func get_match_data_by_id{syscall_ptr: felt, pedersen_ptr: HashBuiltin, range_check_ptr}(
+    id: felt
+) -> (date: felt, home_team: felt, away_team: felt, is_score_set: felt, score_ht: felt, score_at: felt) {
+    assert_le(id, 15);
+    let (m) = matches.read(id);
+    return (date=m.date, home_team=m.home_team, away_team=m.away_team, is_score_set=m.is_score_set, score_ht=m.score_ht, score_at=m.score_at);
+}
+
+@view
 func get_users_len{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (len: felt) {
     let len = users_len.read();
     return len;
+
 }
 
 // INTERNALS
