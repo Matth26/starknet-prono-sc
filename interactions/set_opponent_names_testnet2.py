@@ -3,25 +3,15 @@ from starknet_py.net import AccountClient, KeyPair
 from starknet_py.net.networks import TESTNET2
 from starknet_py.net.gateway_client import GatewayClient
 from starknet_py.net.models import StarknetChainId
-from decouple import config
+from starknet_py.cairo.felt import encode_shortstring, decode_shortstring
 
+from decouple import config
 import argparse
 import asyncio
 
 TESTNET2_ACCOUNT_ADDRESS = int(config('TESTNET2_ACCOUNT_ADDRESS'), 16)
 TESTNET2_PRIVATE_KEY = int(config('TESTNET2_PRIVATE_KEY'), 16)
 TESTNET2_PUBLIC_KEY = int(config('TESTNET2_PUBLIC_KEY'), 16)
-
-MAX_LEN_FELT = 31
-def str_to_felt(text):
-  if len(text) > MAX_LEN_FELT:
-    raise Exception("Text length too long to convert to felt.")
-
-  return int.from_bytes(text.encode(), "big")
-
-def felt_to_str(felt):
-  length = (felt.bit_length() + 7) // 8
-  return felt.to_bytes(length, byteorder="big").decode("utf-8")
 
 async def main(contract_address, id, home_team, away_team):
   network_client = GatewayClient(TESTNET2) #GatewayClient("http://localhost:5050")
@@ -47,8 +37,8 @@ async def main(contract_address, id, home_team, away_team):
 
   # Calling contract's function doesn't create a new transaction, you get the function's result.
   (home_team, away_team) = await contract.functions["get_match_oponents_by_id"].call(id)
-  print(felt_to_str(home_team))
-  print(felt_to_str(away_team))
+  print(decode_shortstring(home_team))
+  print(decode_shortstring(away_team))
 
 if __name__ == '__main__':
   parser = parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -59,6 +49,6 @@ if __name__ == '__main__':
     
   args = parser.parse_args()
 
-  asyncio.run(main(args.contract_address, args.match_id, str_to_felt(args.home_team), str_to_felt(args.away_team)))
+  asyncio.run(main(args.contract_address, args.match_id, encode_shortstring(args.home_team), encode_shortstring(args.away_team)))
   
 
