@@ -91,7 +91,7 @@ async def main():
   """await set_match_date_by_id(contract, 0, 1670079600) # 2022-12-03 15:00:00Z
   await set_match_teams_by_id(contract, 0, encode_shortstring("Pays-Bas"), encode_shortstring("Etats-Unis"))
   await set_match_result_by_id(contract, 0, 3, 1)"""
-  await set_match_data_by_id(contract, 0, 1670079600, encode_shortstring("Netherland"), encode_shortstring("USA"), 3, 1) 
+  await set_match_data_by_id(contract, 0, 1670079600, encode_shortstring("Netherlands"), encode_shortstring("USA"), 3, 1) 
 
   """await set_match_date_by_id(contract, 1, 1670094000) # 2022-12-03 19:00:00Z
   await set_match_teams_by_id(contract, 1, encode_shortstring("Argentine"), encode_shortstring("Australie"))"""
@@ -102,22 +102,32 @@ async def main():
 
   #await set_match_date_by_id(contract, 3, 1670180400) # 2022-12-04 19:00:00Z
   await set_match_data_by_id(contract, 3, 1670180400, encode_shortstring("Brazil"), encode_shortstring("South Korea"), 4, 1)
-  """await set_match_date_by_id(contract, 4, 1670252400) # 2022-12-05 15:00:00Z
-  await set_match_date_by_id(contract, 5, 1670266800) # 2022-12-05 19:00:00Z
-  await set_match_date_by_id(contract, 6, 1670338800) # 2022-12-06 19:00:00Z
-  await set_match_date_by_id(contract, 7, 1670353200) # 2022-12-06 19:00:00Z
+  #await set_match_date_by_id(contract, 4, 1670252400) # 2022-12-05 15:00:00Z
+  await set_match_data_by_id(contract, 4, 1670252400, encode_shortstring("England"), encode_shortstring("Senegal"), 3, 0)
+  #await set_match_date_by_id(contract, 5, 1670266800) # 2022-12-05 19:00:00Z
+  await set_match_data_by_id(contract, 5, 1670266800, encode_shortstring("France"), encode_shortstring("Poland"), 3, 1)
+  #await set_match_date_by_id(contract, 6, 1670338800) # 2022-12-06 19:00:00Z
+  await set_match_data_by_id(contract, 6, 1670338800, encode_shortstring("Morocco"), encode_shortstring("Spain"), 0, 0)
+  #await set_match_date_by_id(contract, 7, 1670353200) # 2022-12-06 19:00:00Z
+  await set_match_data_by_id(contract, 7, 1670353200, encode_shortstring("Portugal"), encode_shortstring("Switzerland"), 6, 1)
 
-  await set_match_date_by_id(contract, 8, 1670598000) # 2022-12-09 15:00:00Z
-  await set_match_date_by_id(contract, 9, 1670612400) # 2022-12-09 19:00:00Z
-  await set_match_date_by_id(contract, 10, 1670684400) # 2022-12-10 15:00:00Z
-  await set_match_date_by_id(contract, 11, 1670698800) # 2022-12-10 19:00:00Z
+  #await set_match_date_by_id(contract, 8, 1670598000) # 2022-12-09 15:00:00Z
+  await set_match_data_by_id(contract, 8, 1670598000, encode_shortstring("Netherlands"), encode_shortstring("Argentina"), 2, 2)
+  #await set_match_date_by_id(contract, 9, 1670612400) # 2022-12-09 19:00:00Z
+  await set_match_data_by_id(contract, 9, 1670612400, encode_shortstring("Croatia"), encode_shortstring("Brazil"), 1, 1)
+  #await set_match_date_by_id(contract, 10, 1670684400) # 2022-12-10 15:00:00Z
+  await set_match_data_by_id(contract, 10, 1670684400, encode_shortstring("England"), encode_shortstring("France"), 1, 2)
+  #await set_match_date_by_id(contract, 11, 1670698800) # 2022-12-10 19:00:00Z
+  await set_match_data_by_id(contract, 11, 1670698800, encode_shortstring("Morocco"), encode_shortstring("Portugal"), 1, 0)
 
-  await set_match_date_by_id(contract, 12, 1670958000) # 2022-12-13 19:00:00Z
-  await set_match_date_by_id(contract, 13, 1671044400) # 2022-12-14 19:00:00Z
+  #await set_match_date_by_id(contract, 12, 1670958000) # 2022-12-13 19:00:00Z
+  await set_match_data_by_id(contract, 12, 1670958000, encode_shortstring("Argentina"), encode_shortstring("Croatia"), 3, 0)
+  #await set_match_date_by_id(contract, 13, 1671044400) # 2022-12-14 19:00:00Z
+  await set_match_data_by_id(contract, 13, 1671044400, encode_shortstring("France"), encode_shortstring("Morocco"), 2, 0)
 
   await set_match_date_by_id(contract, 14, 1671289200) # 2022-12-17 15:00:00Z
 
-  await set_match_date_by_id(contract, 15, 1671375600) # 2022-12-18 15:00:00Z"""
+  await set_match_date_by_id(contract, 15, 1671375600) # 2022-12-18 15:00:00Z
 
   # Calling contract's function doesn't create a new transaction, you get the function's result.
   (result) = await contract.functions["get_match_date_by_id"].call(0)
