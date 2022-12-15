@@ -4,6 +4,7 @@
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.math import (assert_not_zero, assert_not_equal, assert_le)
+from starkware.cairo.common.math_cmp import is_nn
 from starkware.starknet.common.syscalls import (
     get_caller_address,
     get_block_timestamp,
@@ -19,6 +20,7 @@ struct Match {
 }
 
 struct Bet {
+    has_been_bet: felt,
     score_ht: felt,
     score_at: felt,
 }
@@ -187,13 +189,14 @@ func set_match_bet_by_id{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_c
 
     let (match) = matches.read(id=id);
     let (local block_timestamp) = get_block_timestamp();
-    with_attr error_message("set_match_bet_by_id failed:\ncannot bet on already started match") {
-        assert_le(block_timestamp, match.date);
-    }
+    //with_attr error_message("set_match_bet_by_id failed:\ncannot bet on already started match") {
+    //    assert_le(block_timestamp, match.date);
+    //}
 
     let (local caller) = get_caller_address();
     
     let bet = Bet(
+        has_been_bet=TRUE,
         score_ht=home_team,
         score_at=away_team
     );
@@ -251,7 +254,49 @@ func get_user_bet_by_id{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_ch
     return user_bet;
 }
 
+@view
+func get_user_points_by_id{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(user_address: felt, id: felt) -> (points: felt) {
+    alloc_locals;
+    let (local user_bet) = bets.read(user_address, id);
+    let (local match) = matches.read(id);
+
+    if(match.is_score_set == FALSE) {
+        return (points=0);
+    } else {
+        if(user_bet.has_been_bet == TRUE) {
+            let points = _compute_points(match, user_bet);
+            return (points=points);
+        }
+        return (points=0);
+    }
+}
+
+@view
+func get_user_points{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(user_address: felt) -> (points: felt) {
+    let points = _get_user_points(user_address, 0);
+    return (points=points);
+}
+
 // INTERNALS
+func _get_user_points{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(user_address: felt, id: felt) -> felt {
+    alloc_locals;
+
+    if(id == 16) {
+        return 0;
+    } else {
+        let (local user_bet) = bets.read(user_address, id);
+        let (local match) = matches.read(id);
+        if(user_bet.has_been_bet == TRUE) {
+            let points = _compute_points(match, user_bet);
+            let next_points = _get_user_points(user_address, id+1);
+
+            return points + next_points;
+        } else {
+            return _get_user_points(user_address, id+1);
+        }
+    }
+}
+
 
 func _assert_only_owner{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
     alloc_locals;
@@ -279,6 +324,38 @@ func _has_user_already_bet{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range
     return _has_user_already_bet(user_address, current_id+1);
 }
 
+func _compute_points{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(m: Match, b: Bet) -> felt {
+    if(b.score_ht == m.score_ht) {
+        if(b.score_at == m.score_at) {
+            return 3;
+        }
+    }
+
+    let diff_match = m.score_ht - m.score_at;
+    let diff_bet = b.score_ht - b.score_at;
+    if(diff_match == diff_bet) {
+        return 2;
+    }
+
+    let winner = m.score_ht - m.score_at;
+    let prono_winner = b.score_ht - b.score_at;
+    let is_winner_not_negative = is_nn(winner);
+    let is_prono_winner_not_negative = is_nn(prono_winner);
+    
+    if(is_winner_not_negative == 1) {
+        if(is_prono_winner_not_negative == 1) {
+            return 1;
+        } else {
+            return 0;
+        }
+    } else {
+        if(is_prono_winner_not_negative == 1) {
+            return 0;
+        } else {
+            return 1;
+        }
+    }
+}
 
 // STORAGES
 

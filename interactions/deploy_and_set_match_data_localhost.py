@@ -45,6 +45,14 @@ async def get_user_bet_by_id(contract, user_address, id):
   result = await contract.functions["get_user_bet_by_id"].call(user_address, id)
   print(result)
 
+async def get_user_points_by_id(contract, user_address, id):
+  result = await contract.functions["get_user_points_by_id"].call(user_address, id)
+  print(result.points)
+
+async def get_user_points(contract, user_address):
+  result = await contract.functions["get_user_points"].call(user_address)
+  print(result.points)
+
 
 async def main():
   network_client = GatewayClient("http://localhost:5050")
@@ -116,7 +124,7 @@ async def main():
   #await set_match_date_by_id(contract, 8, 1670598000) # 2022-12-09 15:00:00Z
   await set_match_data_by_id(contract, 8, 1670598000, encode_shortstring("Netherlands"), encode_shortstring("Argentina"), 2, 2)
   #await set_match_date_by_id(contract, 9, 1670612400) # 2022-12-09 19:00:00Z
-  await set_match_data_by_id(contract, 9, 1670612400, encode_shortstring("Croatia"), encode_shortstring("Brazil"), 1, 1)
+  await set_match_data_by_id(contract, 9, 1670612400, encode_shortstring("Croatia"), encode_shortstring("Brazil"), 1, 1)"""
   #await set_match_date_by_id(contract, 10, 1670684400) # 2022-12-10 15:00:00Z
   await set_match_data_by_id(contract, 10, 1670684400, encode_shortstring("England"), encode_shortstring("France"), 1, 2)
   #await set_match_date_by_id(contract, 11, 1670698800) # 2022-12-10 19:00:00Z
@@ -127,15 +135,48 @@ async def main():
   #await set_match_date_by_id(contract, 13, 1671044400) # 2022-12-14 19:00:00Z
   await set_match_data_by_id(contract, 13, 1671044400, encode_shortstring("France"), encode_shortstring("Morocco"), 2, 0)
 
-  await set_match_date_by_id(contract, 14, 1671289200) # 2022-12-17 15:00:00Z"""
+  await set_match_date_by_id(contract, 14, 1671289200) # 2022-12-17 15:00:00Z
 
   await set_match_date_by_id(contract, 15, 1671375600) # 2022-12-18 15:00:00Z
 
-  await get_users_len(contract)
+  #await get_users_len(contract)
 
-  await set_match_bet_by_id(contract, 15, 1, 2)
+  await set_match_bet_by_id(contract, 10, 1, 2)
+  await get_user_points_by_id(contract, 0x27caf40c6fb8fb5e134a9687b9485d02f33642fd5dd6200f1eadab02822291d, 10)
+  print("should be 3")
+  await set_match_bet_by_id(contract, 11, 2, 1)
+  await get_user_points_by_id(contract, 0x27caf40c6fb8fb5e134a9687b9485d02f33642fd5dd6200f1eadab02822291d, 11)
+  print("should be 2")
+  await set_match_bet_by_id(contract, 12, 1, 0)
+  await get_user_points_by_id(contract, 0x27caf40c6fb8fb5e134a9687b9485d02f33642fd5dd6200f1eadab02822291d, 12)
+  print("should be 1")
+  await set_match_bet_by_id(contract, 13, 0, 2)
+  await get_user_points_by_id(contract, 0x27caf40c6fb8fb5e134a9687b9485d02f33642fd5dd6200f1eadab02822291d, 13)
+  print("should be 0")
 
-  await get_users_len(contract)
+  print(" ")
+  await get_user_points_by_id(contract, 0x27caf40c6fb8fb5e134a9687b9485d02f33642fd5dd6200f1eadab02822291d, 0)
+  await get_user_points_by_id(contract, 0x27caf40c6fb8fb5e134a9687b9485d02f33642fd5dd6200f1eadab02822291d, 1)
+  await get_user_points_by_id(contract, 0x27caf40c6fb8fb5e134a9687b9485d02f33642fd5dd6200f1eadab02822291d, 2)
+  await get_user_points_by_id(contract, 0x27caf40c6fb8fb5e134a9687b9485d02f33642fd5dd6200f1eadab02822291d, 3)
+  await get_user_points_by_id(contract, 0x27caf40c6fb8fb5e134a9687b9485d02f33642fd5dd6200f1eadab02822291d, 4)
+  await get_user_points_by_id(contract, 0x27caf40c6fb8fb5e134a9687b9485d02f33642fd5dd6200f1eadab02822291d, 5)
+  await get_user_points_by_id(contract, 0x27caf40c6fb8fb5e134a9687b9485d02f33642fd5dd6200f1eadab02822291d, 6)
+  await get_user_points_by_id(contract, 0x27caf40c6fb8fb5e134a9687b9485d02f33642fd5dd6200f1eadab02822291d, 7)
+  await get_user_points_by_id(contract, 0x27caf40c6fb8fb5e134a9687b9485d02f33642fd5dd6200f1eadab02822291d, 8)
+  await get_user_points_by_id(contract, 0x27caf40c6fb8fb5e134a9687b9485d02f33642fd5dd6200f1eadab02822291d, 9)
+  await get_user_points_by_id(contract, 0x27caf40c6fb8fb5e134a9687b9485d02f33642fd5dd6200f1eadab02822291d, 10)
+  await get_user_points_by_id(contract, 0x27caf40c6fb8fb5e134a9687b9485d02f33642fd5dd6200f1eadab02822291d, 11)
+  await get_user_points_by_id(contract, 0x27caf40c6fb8fb5e134a9687b9485d02f33642fd5dd6200f1eadab02822291d, 12)
+  await get_user_points_by_id(contract, 0x27caf40c6fb8fb5e134a9687b9485d02f33642fd5dd6200f1eadab02822291d, 13)
+  await get_user_points_by_id(contract, 0x27caf40c6fb8fb5e134a9687b9485d02f33642fd5dd6200f1eadab02822291d, 14)
+  await get_user_points_by_id(contract, 0x27caf40c6fb8fb5e134a9687b9485d02f33642fd5dd6200f1eadab02822291d, 15)
+  print(" ")
+
+
+  #await get_users_len(contract)
+
+  await get_user_points(contract, 0x27caf40c6fb8fb5e134a9687b9485d02f33642fd5dd6200f1eadab02822291d);
 
   await get_user_bet_by_id(contract, 0x27caf40c6fb8fb5e134a9687b9485d02f33642fd5dd6200f1eadab02822291d, 15)
 
