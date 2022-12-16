@@ -5,6 +5,7 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.math import (assert_not_zero, assert_not_equal, assert_le)
 from starkware.cairo.common.math_cmp import is_nn
+from starkware.cairo.common.alloc import alloc
 from starkware.starknet.common.syscalls import (
     get_caller_address,
     get_block_timestamp,
@@ -23,6 +24,11 @@ struct Bet {
     has_been_bet: felt,
     score_ht: felt,
     score_at: felt,
+}
+
+struct Score {
+    address: felt,
+    points: felt,
 }
 
 @constructor
@@ -277,7 +283,35 @@ func get_user_points{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check
     return (points=points);
 }
 
+@view
+func get_scoreboard{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (scores_len: felt, scores: Score*) {
+    alloc_locals;
+
+    let (len) = users_len.read();
+     with_attr error_message("get_scoreboard failed:\n  no user") {
+        assert_not_zero(len);
+    }
+
+    let (scores: Score*) = alloc();
+    _add_user_and_points_to_array(scores, 0);
+    return (len, scores);
+}
+
 // INTERNALS
+func _add_user_and_points_to_array{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(scores: Score*, user_index: felt) -> Score* {
+    alloc_locals;
+
+    let (len) = users_len.read();
+    if(user_index == len){
+        return scores;
+    } else {
+        let (local user) = users.read(user_index);
+        let (points) = get_user_points(user);
+        assert scores[user_index] = Score(address=user, points=points);
+        return _add_user_and_points_to_array(scores, user_index + 1);
+    }
+}
+
 func _get_user_points{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(user_address: felt, id: felt) -> felt {
     alloc_locals;
 
@@ -296,7 +330,6 @@ func _get_user_points{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_chec
         }
     }
 }
-
 
 func _assert_only_owner{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
     alloc_locals;

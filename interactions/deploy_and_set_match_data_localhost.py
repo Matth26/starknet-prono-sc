@@ -52,7 +52,10 @@ async def get_user_points_by_id(contract, user_address, id):
 async def get_user_points(contract, user_address):
   result = await contract.functions["get_user_points"].call(user_address)
   print(result.points)
-
+  
+async def get_scoreboard(contract):
+  result = await contract.functions["get_scoreboard"].call()
+  print(result)
 
 async def main():
   network_client = GatewayClient("http://localhost:5050")
@@ -154,25 +157,7 @@ async def main():
   await get_user_points_by_id(contract, 0x27caf40c6fb8fb5e134a9687b9485d02f33642fd5dd6200f1eadab02822291d, 13)
   print("should be 0")
 
-  print(" ")
-  await get_user_points_by_id(contract, 0x27caf40c6fb8fb5e134a9687b9485d02f33642fd5dd6200f1eadab02822291d, 0)
-  await get_user_points_by_id(contract, 0x27caf40c6fb8fb5e134a9687b9485d02f33642fd5dd6200f1eadab02822291d, 1)
-  await get_user_points_by_id(contract, 0x27caf40c6fb8fb5e134a9687b9485d02f33642fd5dd6200f1eadab02822291d, 2)
-  await get_user_points_by_id(contract, 0x27caf40c6fb8fb5e134a9687b9485d02f33642fd5dd6200f1eadab02822291d, 3)
-  await get_user_points_by_id(contract, 0x27caf40c6fb8fb5e134a9687b9485d02f33642fd5dd6200f1eadab02822291d, 4)
-  await get_user_points_by_id(contract, 0x27caf40c6fb8fb5e134a9687b9485d02f33642fd5dd6200f1eadab02822291d, 5)
-  await get_user_points_by_id(contract, 0x27caf40c6fb8fb5e134a9687b9485d02f33642fd5dd6200f1eadab02822291d, 6)
-  await get_user_points_by_id(contract, 0x27caf40c6fb8fb5e134a9687b9485d02f33642fd5dd6200f1eadab02822291d, 7)
-  await get_user_points_by_id(contract, 0x27caf40c6fb8fb5e134a9687b9485d02f33642fd5dd6200f1eadab02822291d, 8)
-  await get_user_points_by_id(contract, 0x27caf40c6fb8fb5e134a9687b9485d02f33642fd5dd6200f1eadab02822291d, 9)
-  await get_user_points_by_id(contract, 0x27caf40c6fb8fb5e134a9687b9485d02f33642fd5dd6200f1eadab02822291d, 10)
-  await get_user_points_by_id(contract, 0x27caf40c6fb8fb5e134a9687b9485d02f33642fd5dd6200f1eadab02822291d, 11)
-  await get_user_points_by_id(contract, 0x27caf40c6fb8fb5e134a9687b9485d02f33642fd5dd6200f1eadab02822291d, 12)
-  await get_user_points_by_id(contract, 0x27caf40c6fb8fb5e134a9687b9485d02f33642fd5dd6200f1eadab02822291d, 13)
-  await get_user_points_by_id(contract, 0x27caf40c6fb8fb5e134a9687b9485d02f33642fd5dd6200f1eadab02822291d, 14)
-  await get_user_points_by_id(contract, 0x27caf40c6fb8fb5e134a9687b9485d02f33642fd5dd6200f1eadab02822291d, 15)
-  print(" ")
-
+  await get_scoreboard(contract)
 
   #await get_users_len(contract)
 
