@@ -34,8 +34,13 @@ async def set_match_data_by_id(contract, id, date, home_team, away_team, score_h
   await invocation.wait_for_acceptance()
 
 async def set_match_bet_by_id(contract, id, home_team, away_team):
-  invocation = await contract.functions["set_match_bet_by_id"].invoke(id, home_team, away_team, max_fee=int(1e16))
+  invocation = await contract.functions["set_match_bet_by_id"].invoke({"match_id": id, "score_ht": home_team, "score_at": away_team}, max_fee=int(1e16))
   await invocation.wait_for_acceptance()
+
+async def set_match_bets(contract, bets):
+  invocation = await contract.functions["set_match_bets"].invoke(bets, max_fee=int(1e16))
+  await invocation.wait_for_acceptance()
+
 
 async def get_users_len(contract):
   print("\nget_users_len")
@@ -185,12 +190,19 @@ async def main():
   await get_user_points_by_id(contract, 0x27caf40c6fb8fb5e134a9687b9485d02f33642fd5dd6200f1eadab02822291d, 13)
   print("(should be 0)")
 
+  bet0 = {"match_id": 0, "score_ht": 1, "score_at": 2}
+  bet1 = {"match_id": 1, "score_ht": 1, "score_at": 2}
+  bet2 = {"match_id": 2, "score_ht": 1, "score_at": 2}
+  await set_match_bets(contract, [bet0, bet1, bet2])
+  await get_user_bets(contract, 0x27caf40c6fb8fb5e134a9687b9485d02f33642fd5dd6200f1eadab02822291d)
+  
+
   print("\nTEST FUNC WITH BETS")
-  await get_users_len(contract)
+  """await get_users_len(contract)
   await get_user_bets(contract, 0x27caf40c6fb8fb5e134a9687b9485d02f33642fd5dd6200f1eadab02822291d)
   await get_matches_data(contract)
   await get_user_points_for_each_bet(contract, 0x27caf40c6fb8fb5e134a9687b9485d02f33642fd5dd6200f1eadab02822291d)
-  await get_user_bets(contract, 0x27caf40c6fb8fb5e134a9687b9485d02f33642fd5dd6200f1eadab02822291d)
+  await get_user_bets(contract, 0x27caf40c6fb8fb5e134a9687b9485d02f33642fd5dd6200f1eadab02822291d)"""
   await get_scoreboard(contract)
 
 asyncio.run(main())

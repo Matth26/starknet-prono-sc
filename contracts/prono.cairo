@@ -20,6 +20,12 @@ struct Match {
     score_at: felt,
 }
 
+struct FromFrontBet {
+    match_id: felt,
+    score_ht: felt,
+    score_at: felt,
+}
+
 struct Bet {
     has_been_bet: felt,
     score_ht: felt,
@@ -193,34 +199,63 @@ func set_match_data_by_id{pedersen_ptr: HashBuiltin*, syscall_ptr: felt*, range_
 
 @external
 func set_match_bet_by_id{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    id: felt, home_team: felt, away_team: felt
+    b: FromFrontBet
+) {
+    let (caller) = get_caller_address();
+    _set_bet_by_id(caller, b);
+
+    return ();
+}
+
+func _set_bet_by_id{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    address: felt, b: FromFrontBet
 ) {
     alloc_locals;
-    assert_le(id, 15);
+    assert_le(b.match_id, 15);
 
-    let (match) = matches.read(id=id);
+    let (match) = matches.read(id=b.match_id);
     let (local block_timestamp) = get_block_timestamp();
     //with_attr error_message("set_match_bet_by_id failed:\ncannot bet on already started match") {
     //    assert_le(block_timestamp, match.date);
     //}
-
-    let (local caller) = get_caller_address();
     
     let bet = Bet(
         has_been_bet=TRUE,
-        score_ht=home_team,
-        score_at=away_team
+        score_ht=b.score_ht,
+        score_at=b.score_at
     );
 
-    bets.write(address=caller, match_id=id, value=bet);
-    let has_user_already_bet = _has_user_already_bet(caller, 0);
+    bets.write(address=address, match_id=b.match_id, value=bet);
+    let has_user_already_bet = _has_user_already_bet(address, 0);
     if(has_user_already_bet == FALSE) {
         let (id) = users_len.read();
-        users.write(id, caller);
+        users.write(id, address);
         users_len.write(id+1);
         return ();
     } else {
         return ();
+    }
+}
+
+@external
+func set_match_bets{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    bets_len: felt, bets: FromFrontBet*
+) {
+    let (caller) = get_caller_address();
+
+    _set_bet__rec(caller, bets_len, bets);
+    return ();
+}
+
+func _set_bet__rec{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    address, bets_len: felt, bets: FromFrontBet*
+) {
+    if(bets_len == 0) { 
+        return ();
+    } else {
+        let bet = bets[0];
+        _set_bet_by_id(address, bet);
+        return _set_bet__rec(address, bets_len-1, bets+1);
     }
 }
 
@@ -261,11 +296,11 @@ func get_matches_data{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_chec
     alloc_locals;
 
     let (matches: Match*) = alloc();
-    _add_match_to_array(matches, 0);
+    _add_match_to_array__rec(matches, 0);
     return (16, matches);
 }
 
-func _add_match_to_array{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(matches_arr: Match*, match_index: felt) -> Match* {
+func _add_match_to_array__rec{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(matches_arr: Match*, match_index: felt) -> Match* {
     alloc_locals;
 
     if(match_index == 16){
@@ -273,7 +308,7 @@ func _add_match_to_array{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_c
     } else {
         let (local match) = matches.read(match_index);
         assert matches_arr[match_index] = match;
-        return _add_match_to_array(matches_arr, match_index + 1);
+        return _add_match_to_array__rec(matches_arr, match_index + 1);
     }
 }
 
@@ -301,12 +336,12 @@ func get_user_bets{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_p
     if(has_user_already_bet == FALSE) {
         return (0, bets);
     } else {
-        _add_bet_to_array(user_address, bets, 0);
+        _add_bet_to_array__rec(user_address, bets, 0);
         return (16, bets);
     }
 }
 
-func _add_bet_to_array{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(user_address: felt, bets_arr: Bet*, match_index: felt) -> Bet* {
+func _add_bet_to_array__rec{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(user_address: felt, bets_arr: Bet*, match_index: felt) -> Bet* {
     alloc_locals;
 
     if(match_index == 16){
@@ -314,7 +349,7 @@ func _add_bet_to_array{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_che
     } else {
         let (local bet) = bets.read(user_address, match_index);
         assert bets_arr[match_index] = bet;
-        return _add_bet_to_array(user_address, bets_arr, match_index + 1);
+        return _add_bet_to_array__rec(user_address, bets_arr, match_index + 1);
     }
 }
 
@@ -336,11 +371,11 @@ func get_user_points_by_id{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range
 
 @view
 func get_user_points{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(user_address: felt) -> (points: felt) {
-    let points = _get_user_points(user_address, 0);
+    let points = _get_user_points__rec(user_address, 0);
     return (points=points);
 }
 
-func _get_user_points{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(user_address: felt, id: felt) -> felt {
+func _get_user_points__rec{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(user_address: felt, id: felt) -> felt {
     alloc_locals;
 
     if(id == 16) {
@@ -350,7 +385,7 @@ func _get_user_points{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_chec
         let (local match) = matches.read(id);
         
         let points = _compute_points(match, user_bet);
-        let next_points = _get_user_points(user_address, id+1);
+        let next_points = _get_user_points__rec(user_address, id+1);
 
         return points + next_points;   
     }
@@ -362,11 +397,11 @@ func get_user_points_for_each_bet{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*
     alloc_locals;
 
     let (points: Points*) = alloc();
-    _add_points_to_array(user_address, points, 0);
+    _add_points_to_array__rec(user_address, points, 0);
     return (16, points);
 }
 
-func _add_points_to_array{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(user_address: felt, points_arr: Points*, match_index: felt) -> Points* {
+func _add_points_to_array__rec{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(user_address: felt, points_arr: Points*, match_index: felt) -> Points* {
     alloc_locals;
 
     if(match_index == 16){
@@ -377,7 +412,7 @@ func _add_points_to_array{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_
         let points = _compute_points(match, user_bet);
         
         assert points_arr[match_index] = Points(match_id=match_index, points=points);
-        return _add_points_to_array(user_address, points_arr, match_index + 1);
+        return _add_points_to_array__rec(user_address, points_arr, match_index + 1);
     }
 }
 

@@ -38,11 +38,8 @@ async def set_match_result_by_id(contract, id, home_team, away_team):
   await invocation.wait_for_acceptance()
 
 async def set_match_data_by_id(contract, id, date, home_team, away_team, score_ht, score_at):
-  # All exposed functions are available at contract.functions.
-  # Here we invoke a function, creating a new transaction.
+  print("\nset_match_data_by_id(" + str(id) + ")")
   invocation = await contract.functions["set_match_data_by_id"].invoke(id, date, home_team, away_team, score_ht, score_at, max_fee=int(1e16))
-
-  # Invocation returns InvokeResult object. It exposes a helper for waiting until transaction is accepted.
   await invocation.wait_for_acceptance()
 
 async def main():
@@ -99,7 +96,7 @@ async def main():
   await set_match_data_by_id(contract, 1, 1670094000, encode_shortstring("Argentina"), encode_shortstring("Australia"), 2, 1)
 
   #await set_match_date_by_id(contract, 2, 1670166000) # 2022-12-04 15:00:00Z
-  """await set_match_data_by_id(contract, 2, 1670166000, encode_shortstring("Japan"), encode_shortstring("Croatia"), 1, 1)
+  await set_match_data_by_id(contract, 2, 1670166000, encode_shortstring("Japan"), encode_shortstring("Croatia"), 1, 1)
 
   #await set_match_date_by_id(contract, 3, 1670180400) # 2022-12-04 19:00:00Z
   await set_match_data_by_id(contract, 3, 1670180400, encode_shortstring("Brazil"), encode_shortstring("South Korea"), 4, 1)
@@ -128,7 +125,7 @@ async def main():
 
   await set_match_date_by_id(contract, 14, 1671289200) # 2022-12-17 15:00:00Z
 
-  await set_match_date_by_id(contract, 15, 1671375600) # 2022-12-18 15:00:00Z"""
+  await set_match_date_by_id(contract, 15, 1671375600) # 2022-12-18 15:00:00Z
 
 asyncio.run(main())
 
