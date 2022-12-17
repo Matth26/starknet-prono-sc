@@ -177,7 +177,7 @@ async def main():
   await get_scoreboard(contract)
 
   print("\nSET SOME BETS")
-  await set_match_bet_by_id(contract, 10, 1, 2)
+  """await set_match_bet_by_id(contract, 10, 1, 2)
   await get_user_points_by_id(contract, 0x27caf40c6fb8fb5e134a9687b9485d02f33642fd5dd6200f1eadab02822291d, 10)
   print("(should be 3)")
   await set_match_bet_by_id(contract, 11, 2, 1)
@@ -188,11 +188,11 @@ async def main():
   print("(should be 1)")
   await set_match_bet_by_id(contract, 13, 0, 2)
   await get_user_points_by_id(contract, 0x27caf40c6fb8fb5e134a9687b9485d02f33642fd5dd6200f1eadab02822291d, 13)
-  print("(should be 0)")
+  print("(should be 0)")"""
 
-  bet0 = {"match_id": 0, "score_ht": 1, "score_at": 2}
-  bet1 = {"match_id": 1, "score_ht": 1, "score_at": 2}
-  bet2 = {"match_id": 2, "score_ht": 1, "score_at": 2}
+  bet0 = {"match_id": 4, "score_ht": 1, "score_at": 2}
+  bet1 = {"match_id": 1, "score_ht": 3, "score_at": 4}
+  bet2 = {"match_id": 7, "score_ht": 5, "score_at": 6}
   await set_match_bets(contract, [bet0, bet1, bet2])
   await get_user_bets(contract, 0x27caf40c6fb8fb5e134a9687b9485d02f33642fd5dd6200f1eadab02822291d)
   

@@ -255,7 +255,7 @@ func _set_bet__rec{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_p
     } else {
         let bet = bets[0];
         _set_bet_by_id(address, bet);
-        return _set_bet__rec(address, bets_len-1, bets+1);
+        return _set_bet__rec(address, bets_len-1, &bets[1]);
     }
 }
 
