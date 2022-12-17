@@ -38,23 +38,43 @@ async def set_match_bet_by_id(contract, id, home_team, away_team):
   await invocation.wait_for_acceptance()
 
 async def get_users_len(contract):
+  print("\nget_users_len")
   result = await contract.functions["get_users_len"].call()
   print(result.len)
 
 async def get_user_bet_by_id(contract, user_address, id):
+  print("\nget_user_bet_by_id")
   result = await contract.functions["get_user_bet_by_id"].call(user_address, id)
   print(result)
 
 async def get_user_points_by_id(contract, user_address, id):
+  print("\nget_user_points_by_id")
   result = await contract.functions["get_user_points_by_id"].call(user_address, id)
   print(result.points)
 
 async def get_user_points(contract, user_address):
+  print("\nget_user_points")
   result = await contract.functions["get_user_points"].call(user_address)
   print(result.points)
   
 async def get_scoreboard(contract):
+  print("\nget_scoreboard")
   result = await contract.functions["get_scoreboard"].call()
+  print(result)
+
+async def get_matches_data(contract):
+  print("\nget_matches_data")
+  result = await contract.functions["get_matches_data"].call()
+  print(result)
+
+async def get_user_points_for_each_bet(contract, user_address):
+  print("\nget_user_points_for_each_bet")
+  result = await contract.functions["get_user_points_for_each_bet"].call(user_address)
+  print(result)
+
+async def get_user_bets(contract, user_address):
+  print("\nget_user_bets")
+  result = await contract.functions["get_user_bets"].call(user_address)
   print(result)
 
 async def main():
@@ -144,26 +164,37 @@ async def main():
 
   #await get_users_len(contract)
 
-  await set_match_bet_by_id(contract, 10, 1, 2)
-  await get_user_points_by_id(contract, 0x27caf40c6fb8fb5e134a9687b9485d02f33642fd5dd6200f1eadab02822291d, 10)
-  print("should be 3")
-  await set_match_bet_by_id(contract, 11, 2, 1)
-  await get_user_points_by_id(contract, 0x27caf40c6fb8fb5e134a9687b9485d02f33642fd5dd6200f1eadab02822291d, 11)
-  print("should be 2")
-  await set_match_bet_by_id(contract, 12, 1, 0)
-  await get_user_points_by_id(contract, 0x27caf40c6fb8fb5e134a9687b9485d02f33642fd5dd6200f1eadab02822291d, 12)
-  print("should be 1")
-  await set_match_bet_by_id(contract, 13, 0, 2)
-  await get_user_points_by_id(contract, 0x27caf40c6fb8fb5e134a9687b9485d02f33642fd5dd6200f1eadab02822291d, 13)
-  print("should be 0")
-
+  print("\nTEST FUNC WITH NO BETS")
+  await get_user_bets(contract, 0x27caf40c6fb8fb5e134a9687b9485d02f33642fd5dd6200f1eadab02822291d)
+  await get_matches_data(contract)
+  await get_user_points_for_each_bet(contract, 0x27caf40c6fb8fb5e134a9687b9485d02f33642fd5dd6200f1eadab02822291d)
+  await get_user_bets(contract, 0x27caf40c6fb8fb5e134a9687b9485d02f33642fd5dd6200f1eadab02822291d)
   await get_scoreboard(contract)
 
-  #await get_users_len(contract)
+  print("\nSET SOME BETS")
+  await set_match_bet_by_id(contract, 10, 1, 2)
+  await get_user_points_by_id(contract, 0x27caf40c6fb8fb5e134a9687b9485d02f33642fd5dd6200f1eadab02822291d, 10)
+  print("(should be 3)")
+  await set_match_bet_by_id(contract, 11, 2, 1)
+  await get_user_points_by_id(contract, 0x27caf40c6fb8fb5e134a9687b9485d02f33642fd5dd6200f1eadab02822291d, 11)
+  print("(should be 2)")
+  await set_match_bet_by_id(contract, 12, 1, 0)
+  await get_user_points_by_id(contract, 0x27caf40c6fb8fb5e134a9687b9485d02f33642fd5dd6200f1eadab02822291d, 12)
+  print("(should be 1)")
+  await set_match_bet_by_id(contract, 13, 0, 2)
+  await get_user_points_by_id(contract, 0x27caf40c6fb8fb5e134a9687b9485d02f33642fd5dd6200f1eadab02822291d, 13)
+  print("(should be 0)")
 
-  await get_user_points(contract, 0x27caf40c6fb8fb5e134a9687b9485d02f33642fd5dd6200f1eadab02822291d);
-
-  await get_user_bet_by_id(contract, 0x27caf40c6fb8fb5e134a9687b9485d02f33642fd5dd6200f1eadab02822291d, 15)
+  print("\nTEST FUNC WITH BETS")
+  await get_users_len(contract)
+  await get_user_bets(contract, 0x27caf40c6fb8fb5e134a9687b9485d02f33642fd5dd6200f1eadab02822291d)
+  await get_matches_data(contract)
+  await get_user_points_for_each_bet(contract, 0x27caf40c6fb8fb5e134a9687b9485d02f33642fd5dd6200f1eadab02822291d)
+  await get_user_bets(contract, 0x27caf40c6fb8fb5e134a9687b9485d02f33642fd5dd6200f1eadab02822291d)
+  await get_scoreboard(contract)
 
 asyncio.run(main())
+
+
+
 

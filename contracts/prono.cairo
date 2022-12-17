@@ -26,6 +26,11 @@ struct Bet {
     score_at: felt,
 }
 
+struct Points {
+    match_id: felt,
+    points: felt,
+}
+
 struct Score {
     address: felt,
     points: felt,
@@ -221,6 +226,8 @@ func set_match_bet_by_id{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_c
 
 // VIEWS
 
+// ---------------------------------------------------------------------------------------------------------------
+// MATCHES
 @view
 func get_match_oponents_by_id{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     id: felt
@@ -249,17 +256,70 @@ func get_match_data_by_id{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_
 }
 
 @view
+func get_matches_data{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() 
+    -> (matches_len: felt, matches: Match*) {
+    alloc_locals;
+
+    let (matches: Match*) = alloc();
+    _add_match_to_array(matches, 0);
+    return (16, matches);
+}
+
+func _add_match_to_array{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(matches_arr: Match*, match_index: felt) -> Match* {
+    alloc_locals;
+
+    if(match_index == 16){
+        return matches_arr;
+    } else {
+        let (local match) = matches.read(match_index);
+        assert matches_arr[match_index] = match;
+        return _add_match_to_array(matches_arr, match_index + 1);
+    }
+}
+
+@view
 func get_users_len{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (len: felt) {
     let len = users_len.read();
     return len;
 }
 
+// ---------------------------------------------------------------------------------------------------------------
+// BETS
 @view
 func get_user_bet_by_id{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(user_address: felt, id: felt) -> (bet: Bet) {
     let user_bet = bets.read(user_address, id);
     return user_bet;
 }
 
+@view
+func get_user_bets{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(user_address: felt) -> (bets_len: felt, bets: Bet*) {
+    alloc_locals;
+
+    let (bets: Bet*) = alloc();
+
+    let has_user_already_bet = _has_user_already_bet(user_address, 0);
+    if(has_user_already_bet == FALSE) {
+        return (0, bets);
+    } else {
+        _add_bet_to_array(user_address, bets, 0);
+        return (16, bets);
+    }
+}
+
+func _add_bet_to_array{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(user_address: felt, bets_arr: Bet*, match_index: felt) -> Bet* {
+    alloc_locals;
+
+    if(match_index == 16){
+        return bets_arr;
+    } else {
+        let (local bet) = bets.read(user_address, match_index);
+        assert bets_arr[match_index] = bet;
+        return _add_bet_to_array(user_address, bets_arr, match_index + 1);
+    }
+}
+
+// ---------------------------------------------------------------------------------------------------------------
+// POINTS
 @view
 func get_user_points_by_id{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(user_address: felt, id: felt) -> (points: felt) {
     alloc_locals;
@@ -269,11 +329,8 @@ func get_user_points_by_id{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range
     if(match.is_score_set == FALSE) {
         return (points=0);
     } else {
-        if(user_bet.has_been_bet == TRUE) {
-            let points = _compute_points(match, user_bet);
-            return (points=points);
-        }
-        return (points=0);
+        let points = _compute_points(match, user_bet);
+        return (points=points);
     }
 }
 
@@ -281,35 +338,6 @@ func get_user_points_by_id{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range
 func get_user_points{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(user_address: felt) -> (points: felt) {
     let points = _get_user_points(user_address, 0);
     return (points=points);
-}
-
-@view
-func get_scoreboard{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (scores_len: felt, scores: Score*) {
-    alloc_locals;
-
-    let (len) = users_len.read();
-     with_attr error_message("get_scoreboard failed:\n  no user") {
-        assert_not_zero(len);
-    }
-
-    let (scores: Score*) = alloc();
-    _add_user_and_points_to_array(scores, 0);
-    return (len, scores);
-}
-
-// INTERNALS
-func _add_user_and_points_to_array{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(scores: Score*, user_index: felt) -> Score* {
-    alloc_locals;
-
-    let (len) = users_len.read();
-    if(user_index == len){
-        return scores;
-    } else {
-        let (local user) = users.read(user_index);
-        let (points) = get_user_points(user);
-        assert scores[user_index] = Score(address=user, points=points);
-        return _add_user_and_points_to_array(scores, user_index + 1);
-    }
 }
 
 func _get_user_points{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(user_address: felt, id: felt) -> felt {
@@ -320,44 +348,44 @@ func _get_user_points{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_chec
     } else {
         let (local user_bet) = bets.read(user_address, id);
         let (local match) = matches.read(id);
-        if(user_bet.has_been_bet == TRUE) {
-            let points = _compute_points(match, user_bet);
-            let next_points = _get_user_points(user_address, id+1);
+        
+        let points = _compute_points(match, user_bet);
+        let next_points = _get_user_points(user_address, id+1);
 
-            return points + next_points;
-        } else {
-            return _get_user_points(user_address, id+1);
-        }
+        return points + next_points;   
     }
 }
 
-func _assert_only_owner{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
+@view
+func get_user_points_for_each_bet{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(user_address: felt) 
+    -> (points_len: felt, points: Points*) {
     alloc_locals;
 
-    let (local caller) = get_caller_address();
-    let (local owner_stor) = owner.read();
-
-    with_attr error_message("_assert_only_owner failed:\n  caller: {caller}\n  owner: {owner}") {
-        assert owner_stor = caller;
-    }
-    return ();
+    let (points: Points*) = alloc();
+    _add_points_to_array(user_address, points, 0);
+    return (16, points);
 }
 
-func _has_user_already_bet{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(user_address: felt, current_id: felt) -> felt {
-    let (len) = users_len.read();
-    if(current_id == len) {
-        return FALSE;
-    }
+func _add_points_to_array{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(user_address: felt, points_arr: Points*, match_index: felt) -> Points* {
+    alloc_locals;
 
-    let (address) = users.read(current_id);
-    if(address == user_address) {
-        return TRUE;
+    if(match_index == 16){
+        return points_arr;
+    } else {
+        let (local match) = matches.read(match_index);
+        let (local user_bet) = bets.read(user_address, match_index);
+        let points = _compute_points(match, user_bet);
+        
+        assert points_arr[match_index] = Points(match_id=match_index, points=points);
+        return _add_points_to_array(user_address, points_arr, match_index + 1);
     }
-
-    return _has_user_already_bet(user_address, current_id+1);
 }
 
 func _compute_points{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(m: Match, b: Bet) -> felt {
+    if(b.has_been_bet == 0) {
+        return 0;
+    }
+
     if(b.score_ht == m.score_ht) {
         if(b.score_at == m.score_at) {
             return 3;
@@ -389,6 +417,66 @@ func _compute_points{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check
         }
     }
 }
+
+// ---------------------------------------------------------------------------------------------------------------
+// SCOREBOARD
+@view
+func get_scoreboard{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (scores_len: felt, scores: Score*) {
+    alloc_locals;
+    let (scores: Score*) = alloc();
+
+    let (len) = users_len.read();
+    if(len == 0) {
+        return (0, scores);
+    }
+
+    _add_score_to_array(scores, 0);
+    return (len, scores);
+}
+
+func _add_score_to_array{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(scores: Score*, user_index: felt) -> Score* {
+    alloc_locals;
+
+    let (len) = users_len.read();
+    if(user_index == len){
+        return scores;
+    } else {
+        let (local user) = users.read(user_index);
+        let (points) = get_user_points(user);
+        assert scores[user_index] = Score(address=user, points=points);
+        return _add_score_to_array(scores, user_index + 1);
+    }
+}
+
+// INTERNALS
+
+func _assert_only_owner{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
+    alloc_locals;
+
+    let (local caller) = get_caller_address();
+    let (local owner_stor) = owner.read();
+
+    with_attr error_message("_assert_only_owner failed:\n  caller: {caller}\n  owner: {owner}") {
+        assert owner_stor = caller;
+    }
+    return ();
+}
+
+func _has_user_already_bet{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(user_address: felt, current_id: felt) -> felt {
+    let (len) = users_len.read();
+    if(current_id == len) {
+        return FALSE;
+    }
+
+    let (address) = users.read(current_id);
+    if(address == user_address) {
+        return TRUE;
+    }
+
+    return _has_user_already_bet(user_address, current_id+1);
+}
+
+
 
 // STORAGES
 
