@@ -124,8 +124,10 @@ async def main():
   await set_match_data_by_id(contract, 13, 1671044400, encode_shortstring("France"), encode_shortstring("Morocco"), 2, 0)
 
   await set_match_date_by_id(contract, 14, 1671289200) # 2022-12-17 15:00:00Z
+  await set_match_teams_by_id(contract, 14, "Croatia", "Morocco")
 
   await set_match_date_by_id(contract, 15, 1671375600) # 2022-12-18 15:00:00Z
+  await set_match_teams_by_id(contract, 14, "Argentina", "France")
 
 asyncio.run(main())
 
